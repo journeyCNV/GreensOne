@@ -5,11 +5,22 @@ import (
 )
 
 func Register(g *gsweb.GreensCore) {
-	group := g.Group("/hhhh")
-	group1 := group.Group("/okk1")
-	group1.Get("/ohhhh", TestHandler)
+	g.Get("/welcome", WelcomeHandler)
+	group := g.Group("/show")
+	{
+		group1 := group.Group("/door")
+		{
+			group1.Get("/open", TestHandler)
+		}
+	}
 }
 
-func TestHandler(c *gsweb.Context) error {
+func WelcomeHandler(ctx *gsweb.Context) error {
+	ctx.Json(200, "welcome!")
+	return nil
+}
+
+func TestHandler(ctx *gsweb.Context) error {
+	ctx.Json(200, "open the door.")
 	return nil
 }

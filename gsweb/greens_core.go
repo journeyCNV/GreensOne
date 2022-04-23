@@ -1,6 +1,7 @@
 package gsweb
 
 import (
+	"log"
 	"net/http"
 	"strings"
 )
@@ -12,7 +13,7 @@ type GreensCore struct {
 	router GRouter
 }
 
-type GRouter map[string]map[string]ControllerHandler // 方法 : 路由 : 实际处理函数
+type GRouter map[string]*TrieTree // 方法 : 路由 : 实际处理函数
 
 const (
 	GET    = "GET"
@@ -50,32 +51,34 @@ func (g *GreensCore) FindRouteHandler(req *http.Request) ControllerHandler {
 	method := req.Method
 	realMethod := strings.ToUpper(method)
 
-	if handlerMap, ok := g.router[realMethod]; ok {
-		if handler, ok := handlerMap[realUri]; ok {
-			return handler
-		}
+	if treeHandler, ok := g.router[realMethod]; ok {
+		return treeHandler.FindHandler(realUri)
 	}
 	return nil
 }
 
 func (g *GreensCore) Get(url string, h ControllerHandler) {
-	realUrl := strings.ToLower(url)
-	g.router[GET][realUrl] = h
+	if err := g.router[GET].AddRouter(url, h); err != nil {
+		log.Fatal("add router error:", err)
+	}
 }
 
 func (g *GreensCore) Post(url string, h ControllerHandler) {
-	realUrl := strings.ToLower(url)
-	g.router[POST][realUrl] = h
+	if err := g.router[POST].AddRouter(url, h); err != nil {
+		log.Fatal("add router error:", err)
+	}
 }
 
 func (g *GreensCore) Put(url string, h ControllerHandler) {
-	realUrl := strings.ToLower(url)
-	g.router[PUT][realUrl] = h
+	if err := g.router[PUT].AddRouter(url, h); err != nil {
+		log.Fatal("add router error:", err)
+	}
 }
 
 func (g *GreensCore) Delete(url string, h ControllerHandler) {
-	realUrl := strings.ToLower(url)
-	g.router[DELETE][realUrl] = h
+	if err := g.router[DELETE].AddRouter(url, h); err != nil {
+		log.Fatal("add router error:", err)
+	}
 }
 
 func (g *GreensCore) Group(prefix string) GGroup {
@@ -83,14 +86,10 @@ func (g *GreensCore) Group(prefix string) GGroup {
 }
 
 func routerMap() GRouter {
-	getRouters := map[string]ControllerHandler{}
-	postRouters := map[string]ControllerHandler{}
-	putRouters := map[string]ControllerHandler{}
-	deleteRouters := map[string]ControllerHandler{}
 	router := GRouter{}
-	router[GET] = getRouters
-	router[POST] = postRouters
-	router[PUT] = putRouters
-	router[DELETE] = deleteRouters
+	router[GET] = NewTrieTree()
+	router[POST] = NewTrieTree()
+	router[PUT] = NewTrieTree()
+	router[DELETE] = NewTrieTree()
 	return router
 }
