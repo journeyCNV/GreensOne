@@ -43,6 +43,8 @@ func TimeoutHandler(fun gsweb.ControllerHandler, d time.Duration) gsweb.Controll
 			c.SetHasTimeout()
 			c.GetResponse().Write([]byte("time out"))
 		}
+
+		c.Next()
 		return nil
 	}
 }

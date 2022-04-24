@@ -5,12 +5,13 @@ import (
 )
 
 func Register(g *gsweb.GreensCore) {
-	g.Get("/welcome", WelcomeHandler)
+	g.Get("/welcome", TestH1(), WelcomeHandler)
 	group := g.Group("/show")
 	{
 		group1 := group.Group("/door")
+		group1.Use(TestH1()) // 批量使用中间件
 		{
-			group1.Get("/open", TestHandler)
+			group1.Get("/open", TestH2(), TestHandler)
 		}
 	}
 }

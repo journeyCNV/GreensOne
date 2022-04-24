@@ -17,7 +17,8 @@ type Context struct {
 	response http.ResponseWriter
 	ctx      context.Context
 
-	handler ControllerHandler
+	handlers []ControllerHandler //当前请求的控制器链
+	index    int                 //当前请求控制器链中下标
 
 	hasTimeout bool        //超时标记
 	writerMux  *sync.Mutex //写保护
@@ -28,12 +29,25 @@ func NewContext(r *http.Request, w http.ResponseWriter) *Context {
 		request:   r,
 		response:  w,
 		ctx:       r.Context(),
+		index:     -1,
 		writerMux: &sync.Mutex{},
 	}
 }
 
 func (ctx *Context) BaseContext() context.Context {
 	return ctx.request.Context()
+}
+
+/**-----------------------------------------------**/
+// 控制器链调用
+func (ctx *Context) Next() error {
+	ctx.index++
+	if ctx.index < len(ctx.handlers) {
+		if err := ctx.handlers[ctx.index](ctx); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 /**---------------实现context接口-------------------**/
@@ -73,6 +87,10 @@ func (ctx *Context) SetHasTimeout() {
 
 func (ctx *Context) HasTimeout() bool {
 	return ctx.hasTimeout
+}
+
+func (ctx *Context) SetHandlers(handlers []ControllerHandler) {
+	ctx.handlers = handlers
 }
 
 /**-------------------------------------------------------**/
@@ -161,6 +179,8 @@ func (ctx *Context) Text(status int, obj string) error {
 	return nil
 }
 
+//---------------------------------------------------------------------------
+
 func handInt(key string, def int, params map[string][]string) int {
 	if val, ok := params[key]; ok {
 		l := len(val)
@@ -175,7 +195,6 @@ func handInt(key string, def int, params map[string][]string) int {
 	return def
 }
 
-//---------------------------------------------------------------------------
 func handString(key string, def string, params map[string][]string) string {
 	if val, ok := params[key]; ok {
 		l := len(val)

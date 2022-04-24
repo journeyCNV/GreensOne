@@ -10,10 +10,10 @@ type TrieTree struct {
 }
 
 type node struct {
-	isLast   bool              //该节点是否为最终节点，是否能完成一个独立的uri
-	segment  string            //节点字符串
-	handler  ControllerHandler //这个节点包含的控制器
-	children []*node           //这个节点下的子节点
+	isLast   bool                //该节点是否为最终节点，是否能完成一个独立的uri
+	segment  string              //节点字符串
+	handlers []ControllerHandler //这个节点包含的控制器 + 中间件
+	children []*node             //这个节点下的子节点
 }
 
 func NewTrieTree() *TrieTree {
@@ -29,15 +29,15 @@ func NewNode() *node {
 	}
 }
 
-func (t *TrieTree) FindHandler(uri string) ControllerHandler {
+func (t *TrieTree) FindHandler(uri string) []ControllerHandler {
 	matchNode := t.root.matchNode(uri)
 	if matchNode == nil {
 		return nil
 	}
-	return matchNode.handler
+	return matchNode.handlers
 }
 
-func (t *TrieTree) AddRouter(uri string, handler ControllerHandler) error {
+func (t *TrieTree) AddRouter(uri string, handlers []ControllerHandler) error {
 	n := t.root
 	if n.matchNode(uri) != nil {
 		return errors.New("route exist:" + uri)
@@ -66,7 +66,7 @@ func (t *TrieTree) AddRouter(uri string, handler ControllerHandler) error {
 			currNode.segment = seg
 			if isLast {
 				currNode.isLast = true
-				currNode.handler = handler
+				currNode.handlers = handlers
 			}
 			n.children = append(n.children, currNode)
 			satisNode = currNode
