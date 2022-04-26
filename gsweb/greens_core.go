@@ -37,18 +37,17 @@ type Handler interface {
 func (g *GreensCore) ServeHTTP(response http.ResponseWriter, request *http.Request) {
 	ctx := NewContext(request, response)
 
-	// 寻找路由
-	handlers := g.FindRouteHandler(request)
-	if handlers == nil {
+	// 寻找路由匹配的控制器们
+	node := g.FindRouteNode(request)
+	if node == nil {
 		ctx.Json(404, "not found")
 		return
 	}
-	ctx.SetHandlers(handlers)
+	ctx.SetHandlers(node.handlers)
 
 	// 设置路由参数
-	/**
 	params := node.parseParamsFormEndNode(request.URL.Path)
-	*/
+	ctx.SetParams(params)
 
 	// 调用路由函数, 访问控制器链上的函数
 	if err := ctx.Next(); err != nil {
@@ -62,15 +61,15 @@ func (g *GreensCore) Use(middlewares ...ControllerHandler) {
 	g.middlewares = append(g.middlewares, middlewares...)
 }
 
-// 匹配路由，如果没有匹配到返回nil
-func (g *GreensCore) FindRouteHandler(req *http.Request) []ControllerHandler {
+// 匹配路由Node
+func (g *GreensCore) FindRouteNode(req *http.Request) *node {
 	uri := req.URL.Path
 	realUri := strings.ToLower(uri)
 	method := req.Method
 	realMethod := strings.ToUpper(method)
 
 	if treeHandler, ok := g.router[realMethod]; ok {
-		return treeHandler.FindHandler(realUri)
+		return treeHandler.root.matchNode(realUri)
 	}
 	return nil
 }

@@ -2,6 +2,8 @@ package gsweb
 
 import "mime/multipart"
 
+//TODO const defaultMultipartMemory =
+
 type GRequest interface {
 	// 请求地址url中带的参数 ?后面后缀获得的参数
 	QueryInt(key string, def int) (int, bool)
