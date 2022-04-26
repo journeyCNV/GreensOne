@@ -14,6 +14,7 @@ type node struct {
 	segment  string              //节点字符串
 	handlers []ControllerHandler //这个节点包含的控制器 + 中间件
 	children []*node             //这个节点下的子节点
+	parent   *node
 }
 
 func NewTrieTree() *TrieTree {
@@ -26,6 +27,7 @@ func NewNode() *node {
 		isLast:   false,
 		segment:  "",
 		children: []*node{},
+		parent:   &node{},
 	}
 }
 
@@ -39,6 +41,7 @@ func (t *TrieTree) FindHandler(uri string) []ControllerHandler {
 
 func (t *TrieTree) AddRouter(uri string, handlers []ControllerHandler) error {
 	n := t.root
+	// 先判断树里有没有这个uri
 	if n.matchNode(uri) != nil {
 		return errors.New("route exist:" + uri)
 	}
@@ -50,7 +53,7 @@ func (t *TrieTree) AddRouter(uri string, handlers []ControllerHandler) error {
 		}
 		isLast := i == len(segments)-1
 
-		// 找到匹配的节点
+		// 先找找有没有匹配的节点
 		var satisNode *node
 		children := n.filterChildNodes(seg)
 		if len(children) > 0 {
@@ -61,17 +64,22 @@ func (t *TrieTree) AddRouter(uri string, handlers []ControllerHandler) error {
 				}
 			}
 		}
+
+		// 如果没有匹配的节点，进行新建
 		if satisNode == nil {
 			currNode := NewNode()
 			currNode.segment = seg
+			currNode.parent = n
+			// 如果已经遍历到uri的最后一段了，存储一下
 			if isLast {
 				currNode.isLast = true
 				currNode.handlers = handlers
 			}
 			n.children = append(n.children, currNode)
-			satisNode = currNode
+			satisNode = currNode // 将新建当前节点赋值给(满足条件的)记录节点
 		}
 
+		// 更换上级节点，往下走
 		n = satisNode
 	}
 
@@ -136,4 +144,22 @@ func (n *node) matchNode(uri string) *node {
 		}
 	}
 	return nil
+}
+
+// 将uri解析为params
+func (n *node) parseParamsFormEndNode(uri string) map[string]string {
+	currNode := n
+	paramMap := map[string]string{}
+	segments := strings.Split(uri, "/")
+	segL := len(segments) - 1
+	for i := segL; i >= 0; i-- {
+		if currNode.segment == "" {
+			break
+		}
+		if isWildSegment(currNode.segment) {
+			paramMap[currNode.segment[1:]] = segments[i] //去掉通配符的:
+		}
+		currNode = currNode.parent
+	}
+	return paramMap
 }

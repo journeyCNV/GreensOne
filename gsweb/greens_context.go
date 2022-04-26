@@ -93,7 +93,7 @@ func (ctx *Context) SetHandlers(handlers []ControllerHandler) {
 	ctx.handlers = handlers
 }
 
-/**-------------------------------------------------------**/
+/**-----------------------request--------------------------------**/
 
 func (ctx *Context) FormAll() map[string][]string {
 	if ctx.request != nil {
@@ -155,6 +155,8 @@ func (ctx *Context) BindJson(obj interface{}) error {
 	}
 	return nil
 }
+
+/**--------------------------response-----------------------------------**/
 
 func (ctx *Context) Json(status int, obj interface{}) error {
 	if ctx.HasTimeout() {

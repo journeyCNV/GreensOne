@@ -9,6 +9,7 @@ import (
 )
 
 /**
+超时控制中间件
 fun : 业务逻辑 handler
 d: 超时时间
 */

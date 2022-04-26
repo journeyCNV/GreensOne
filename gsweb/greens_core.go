@@ -43,8 +43,12 @@ func (g *GreensCore) ServeHTTP(response http.ResponseWriter, request *http.Reque
 		ctx.Json(404, "not found")
 		return
 	}
-
 	ctx.SetHandlers(handlers)
+
+	// 设置路由参数
+	/**
+	params := node.parseParamsFormEndNode(request.URL.Path)
+	*/
 
 	// 调用路由函数, 访问控制器链上的函数
 	if err := ctx.Next(); err != nil {

@@ -2,6 +2,9 @@ package middleware
 
 import "GreensOne/gsweb"
 
+/**
+全局捕获panic中间件
+*/
 func Recovery() gsweb.ControllerHandler {
 	return func(c *gsweb.Context) error {
 		// 捕获c.Next的出现的panic
