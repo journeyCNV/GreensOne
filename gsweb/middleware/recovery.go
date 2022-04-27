@@ -10,7 +10,7 @@ func Recovery() gsweb.ControllerHandler {
 		// 捕获c.Next的出现的panic
 		defer func() {
 			if err := recover(); err != nil {
-				c.Json(500, err)
+				c.SetStatus(500).Json(err)
 			}
 		}()
 		c.Next()

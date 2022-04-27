@@ -5,9 +5,14 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"encoding/xml"
 	"errors"
+	"fmt"
+	"html/template"
 	"io/ioutil"
+	"mime/multipart"
 	"net/http"
+	"net/url"
 	"sync"
 	"time"
 )
@@ -200,13 +205,30 @@ func (ctx *Context) FormStringSlice(key string, def []string) ([]string, bool) {
 	return handArray(key, def, params)
 }
 
-/** TODO
 func (ctx *Context) FormFile(key string) (*multipart.FileHeader, error) {
-	if ctx.request.MultipartForm == nil {
-		if err := ctx.request.ParseMultipartForm()
+	if ctx.request.MultipartForm == nil { // 如果没有设置这个大小
+		// 如果上传的文件大小大于maxMemory,将存在临时文件里  见ctx.request.ParseMultipartForm源码
+		if err := ctx.request.ParseMultipartForm(defaultMultipartMemory); err != nil {
+			return nil, err
+		}
 	}
+	f, fh, err := ctx.request.FormFile(key)
+	if err != nil {
+		return nil, err
+	}
+	f.Close()
+	return fh, err
 }
-*/
+
+func (ctx *Context) Form(key string) interface{} {
+	params := ctx.FormAll()
+	if val, ok := params[key]; ok {
+		if len(val) > 0 {
+			return val[0]
+		}
+	}
+	return nil
+}
 
 // --------------------------------------------------------end
 
@@ -248,7 +270,7 @@ func (ctx *Context) QueryString(key string, def string) (string, bool) {
 	return handString(key, def, params)
 }
 
-func (ctx *Context) QueryArray(key string, def []string) ([]string, bool) {
+func (ctx *Context) QueryStringSlice(key string, def []string) ([]string, bool) {
 	params := ctx.QueryAll()
 	return handArray(key, def, params)
 }
@@ -263,6 +285,7 @@ func (ctx *Context) Query(key string) interface{} {
 
 // --------------------------------------------------------end
 
+// 解析body为object
 func (ctx *Context) BindJson(obj interface{}) error {
 	if ctx.request != nil {
 		body, err := ioutil.ReadAll(ctx.request.Body)
@@ -280,30 +303,207 @@ func (ctx *Context) BindJson(obj interface{}) error {
 	return nil
 }
 
+func (ctx *Context) BindXml(obj interface{}) error {
+	if ctx.request != nil {
+		body, err := ioutil.ReadAll(ctx.request.Body)
+		if err != nil {
+			return err
+		}
+		ctx.request.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+
+		err = xml.Unmarshal(body, obj)
+		if err != nil {
+			return err
+		}
+	} else {
+		return errors.New("ctx.request empty")
+	}
+	return nil
+}
+
+// 其他格式
+func (ctx *Context) GetRawData() ([]byte, error) {
+	if ctx.request != nil {
+		body, err := ioutil.ReadAll(ctx.request.Body)
+		if err != nil {
+			return nil, err
+		}
+		ctx.request.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+		return body, err
+	}
+	return nil, errors.New("ctx.request empty")
+}
+
+func (ctx *Context) Uri() string {
+	return ctx.request.RequestURI
+}
+
+func (ctx *Context) Method() string {
+	return ctx.request.Method
+}
+
+func (ctx *Context) Host() string {
+	return ctx.request.URL.Host
+}
+
+func (ctx *Context) ClientIp() string {
+	r := ctx.request
+	ipAddress := r.Header.Get("X-Real-Ip") // 真实客户端Ip
+	if ipAddress == "" {
+		ipAddress = r.Header.Get("X-Forwarded-For") //代理信息
+	}
+	if ipAddress == "" {
+		ipAddress = r.RemoteAddr // 上一个存在的客户端的地址或者上一个代理服务器地址
+	}
+	return ipAddress
+}
+
+func (ctx *Context) Headers() map[string][]string {
+	return map[string][]string(ctx.request.Header)
+}
+
+func (ctx *Context) Header(key string) (string, bool) {
+	val := ctx.request.Header.Values(key)
+	if val == nil || len(val) <= 0 {
+		return "", false
+	}
+	return val[0], true
+}
+
+func (ctx *Context) Cookies() map[string]string {
+	cookies := ctx.request.Cookies()
+	ret := map[string]string{}
+	for _, cookie := range cookies {
+		ret[cookie.Name] = cookie.Value
+	}
+	return ret
+}
+
+func (ctx *Context) Cookie(key string) (string, bool) {
+	cookies := ctx.Cookies()
+	if val, ok := cookies[key]; ok {
+		return val, true
+	}
+	return "", false
+}
+
 /**--------------------------response-----------------------------------**/
 /*************************************************************************/
+func (ctx *Context) Jsonp(obj interface{}) GResponse {
+	// 获取请求参数
+	callbackFunc, _ := ctx.QueryString("callback", "callback_function")
+	ctx.SetHeader("Context-Type", "application/javascript")
+	// 输出到前端要进行字符过滤，否则可能造成xss攻击
+	callback := template.JSEscapeString(callbackFunc)
 
-func (ctx *Context) Json(status int, obj interface{}) error {
-	if ctx.HasTimeout() {
-		return nil
+	// 输出函数名
+	_, err := ctx.response.Write([]byte(callback))
+	if err != nil {
+		return ctx
 	}
-	ctx.response.Header().Set("Content-Type", "application/json")
-	ctx.response.WriteHeader(status)
+
+	// 输出左括号
+	_, err = ctx.response.Write([]byte("("))
+	if err != nil {
+		return ctx
+	}
+
+	ret, err := json.Marshal(obj)
+	if err != nil {
+		return ctx
+	}
+
+	_, err = ctx.response.Write(ret)
+	if err != nil {
+		return ctx
+	}
+
+	_, err = ctx.response.Write([]byte(")"))
+	if err != nil {
+		return ctx
+	}
+
+	return ctx
+
+}
+
+func (ctx *Context) Json(obj interface{}) GResponse {
 	byteObj, err := json.Marshal(obj)
 	if err != nil {
-		ctx.response.WriteHeader(500)
-		return err
+		return ctx.SetStatus(http.StatusInternalServerError)
 	}
+	ctx.SetHeader("Content-Type", "application/json")
 	ctx.response.Write(byteObj)
-	return nil
+	return ctx
 }
 
-func (ctx *Context) HTML(status int, obj interface{}, template string) error {
-	return nil
+func (ctx *Context) Xml(obj interface{}) GResponse {
+	byt, err := xml.Marshal(obj)
+	if err != nil {
+		return ctx.SetStatus(http.StatusInternalServerError)
+	}
+	ctx.SetHeader("Content-Type", "application/xml")
+	ctx.response.Write(byt)
+	return ctx
 }
 
-func (ctx *Context) Text(status int, obj string) error {
-	return nil
+func (ctx *Context) Html(file string, obj interface{}) GResponse {
+	// 读取模板文件，创建template实例
+	t, err := template.New("output").ParseFiles(file)
+	if err != nil {
+		return ctx
+	}
+	// 将obj和模板结合
+	if err := t.Execute(ctx.response, obj); err != nil {
+		return ctx
+	}
+	ctx.SetHeader("Content-Type", "application/html")
+	return ctx
+}
+
+func (ctx *Context) Text(format string, values ...interface{}) GResponse {
+	out := fmt.Sprintf(format, values...)
+	ctx.SetHeader("Content-Type", "application/text")
+	ctx.response.Write([]byte(out))
+	return ctx
+}
+
+// 301 重定向
+func (ctx *Context) Redirect(path string) GResponse {
+	http.Redirect(ctx.response, ctx.request, path, http.StatusMovedPermanently)
+	return ctx
+}
+
+func (ctx *Context) SetHeader(key string, val string) GResponse {
+	ctx.response.Header().Add(key, val)
+	return ctx
+}
+
+func (ctx *Context) SetCookie(key string, val string, maxAge int, path string, domain string, secure bool, httpOnly bool) GResponse {
+	if path == "" {
+		path = "/"
+	}
+	http.SetCookie(ctx.response, &http.Cookie{
+		Name:     key,
+		Value:    url.QueryEscape(val),
+		MaxAge:   maxAge,
+		Path:     path,
+		Domain:   domain,
+		SameSite: 1,
+		Secure:   secure,
+		HttpOnly: httpOnly,
+	})
+	return ctx
+}
+
+func (ctx *Context) SetStatus(code int) GResponse {
+	ctx.response.WriteHeader(code)
+	return ctx
+}
+
+func (ctx *Context) SetOkStatus() GResponse {
+	ctx.response.WriteHeader(http.StatusOK)
+	return ctx
 }
 
 //-------------------辅助函数---------------------------------------------

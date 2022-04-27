@@ -40,7 +40,7 @@ func (g *GreensCore) ServeHTTP(response http.ResponseWriter, request *http.Reque
 	// 寻找路由匹配的控制器们
 	node := g.FindRouteNode(request)
 	if node == nil {
-		ctx.Json(404, "not found")
+		ctx.Json("not found").SetStatus(http.StatusBadRequest)
 		return
 	}
 	ctx.SetHandlers(node.handlers)
@@ -51,7 +51,7 @@ func (g *GreensCore) ServeHTTP(response http.ResponseWriter, request *http.Reque
 
 	// 调用路由函数, 访问控制器链上的函数
 	if err := ctx.Next(); err != nil {
-		ctx.Json(500, "inner error")
+		ctx.Json("inner error").SetStatus(http.StatusInternalServerError)
 		return
 	}
 }

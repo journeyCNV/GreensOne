@@ -2,7 +2,7 @@ package gsweb
 
 import "mime/multipart"
 
-//TODO const defaultMultipartMemory =
+const defaultMultipartMemory = 32 << 20 // 32MB
 
 type GRequest interface {
 	// 请求地址url中带的参数 ?后面后缀获得的参数

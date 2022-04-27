@@ -2,10 +2,11 @@ package test
 
 import (
 	"GreensOne/gsweb"
+	"time"
 )
 
 func Register(g *gsweb.GreensCore) {
-	g.Get("/welcome", TestH1(), WelcomeHandler)
+	g.Get("/welcome", TestH1(), TestCloseController)
 	group := g.Group("/show")
 	{
 		group1 := group.Group("/door")
@@ -17,11 +18,18 @@ func Register(g *gsweb.GreensCore) {
 }
 
 func WelcomeHandler(ctx *gsweb.Context) error {
-	ctx.Json(200, "welcome!")
+	ctx.Json("welcome!").SetStatus(200)
 	return nil
 }
 
 func TestHandler(ctx *gsweb.Context) error {
-	ctx.Json(200, "open the door.")
+	ctx.Json("open the door.").SetStatus(200)
+	return nil
+}
+
+func TestCloseController(c *gsweb.Context) error {
+	hhh, _ := c.QueryString("hhh", "okk")
+	time.Sleep(10 * time.Second)
+	c.SetOkStatus().Json("test close hhhhhhhhh " + hhh)
 	return nil
 }
