@@ -4,12 +4,12 @@ package gsweb
 路由分组
 */
 type GGroup interface {
-	Get(string, ...ControllerHandler)
-	Post(string, ...ControllerHandler)
-	Put(string, ...ControllerHandler)
-	Delete(string, ...ControllerHandler)
-	Group(string) GGroup                  //支持多层group
-	Use(middlewares ...ControllerHandler) //嵌套中间件
+	Get(string, ...HandlerFunc)
+	Post(string, ...HandlerFunc)
+	Put(string, ...HandlerFunc)
+	Delete(string, ...HandlerFunc)
+	Group(string) GGroup            //支持多层group
+	Use(middlewares ...HandlerFunc) //嵌套中间件
 }
 
 type Group struct {
@@ -17,40 +17,40 @@ type Group struct {
 	prefix string //路由前缀
 	parent *Group // 指向上一级路由，方便控制整个Group共用的中间件，从Group级别加中间件
 
-	middlewares []ControllerHandler
+	middlewares []HandlerFunc
 }
 
 func NewGroup(g *GreensCore, prefix string) *Group {
 	return &Group{
 		core:        g,
 		prefix:      prefix,
-		middlewares: []ControllerHandler{},
+		middlewares: []HandlerFunc{},
 	}
 }
 
 // 注册中间件
-func (g *Group) Use(middlewares ...ControllerHandler) {
+func (g *Group) Use(middlewares ...HandlerFunc) {
 	g.middlewares = append(g.middlewares, middlewares...)
 }
 
-func (g *Group) Get(uri string, h ...ControllerHandler) {
+func (g *Group) Get(uri string, h ...HandlerFunc) {
 	uri = g.getAbsolutePrefix() + uri
 	handlers := append(g.getMiddlewares(), h...)
 	g.core.Get(uri, handlers...)
 }
 
-func (g *Group) Post(uri string, h ...ControllerHandler) {
+func (g *Group) Post(uri string, h ...HandlerFunc) {
 	uri = g.getAbsolutePrefix() + uri
 	handlers := append(g.getMiddlewares(), h...)
 	g.core.Post(uri, handlers...)
 }
-func (g *Group) Put(uri string, h ...ControllerHandler) {
+func (g *Group) Put(uri string, h ...HandlerFunc) {
 	uri = g.getAbsolutePrefix() + uri
 	handlers := append(g.getMiddlewares(), h...)
 	g.core.Put(uri, handlers...)
 }
 
-func (g *Group) Delete(uri string, h ...ControllerHandler) {
+func (g *Group) Delete(uri string, h ...HandlerFunc) {
 	uri = g.getAbsolutePrefix() + uri
 	handlers := append(g.getMiddlewares(), h...)
 	g.core.Delete(uri, handlers...)
@@ -68,7 +68,7 @@ func (g *Group) Group(uri string) GGroup {
 }
 */
 
-func (g *Group) getMiddlewares() []ControllerHandler {
+func (g *Group) getMiddlewares() []HandlerFunc {
 	if g.parent == nil {
 		return g.middlewares
 	}

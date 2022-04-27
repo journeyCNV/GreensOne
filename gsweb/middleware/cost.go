@@ -10,7 +10,7 @@ import (
 请求时长统计中间件
 */
 
-func Cost() gsweb.ControllerHandler {
+func Cost() gsweb.HandlerFunc {
 	return func(c *gsweb.Context) error {
 		start := time.Now()
 

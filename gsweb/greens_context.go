@@ -22,9 +22,9 @@ type Context struct {
 	response http.ResponseWriter
 	ctx      context.Context
 
-	handlers []ControllerHandler //当前请求的控制器链
-	index    int                 //当前请求控制器链中下标
-	params   map[string]string   //路由通配符匹配的参数
+	handlers []HandlerFunc     //当前请求的控制器链
+	index    int               //当前请求控制器链中下标
+	params   map[string]string //路由通配符匹配的参数
 
 	hasTimeout bool        //超时标记
 	writerMux  *sync.Mutex //写保护
@@ -96,7 +96,7 @@ func (ctx *Context) HasTimeout() bool {
 	return ctx.hasTimeout
 }
 
-func (ctx *Context) SetHandlers(handlers []ControllerHandler) {
+func (ctx *Context) SetHandlers(handlers []HandlerFunc) {
 	ctx.handlers = handlers
 }
 

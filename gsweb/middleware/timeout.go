@@ -13,7 +13,7 @@ import (
 fun : 业务逻辑 handler
 d: 超时时间
 */
-func TimeoutHandler(fun gsweb.ControllerHandler, d time.Duration) gsweb.ControllerHandler {
+func TimeoutHandler(d time.Duration) gsweb.HandlerFunc {
 	return func(c *gsweb.Context) error {
 		finish := make(chan struct{}, 1)
 		panicChan := make(chan interface{}, 1)
@@ -30,7 +30,7 @@ func TimeoutHandler(fun gsweb.ControllerHandler, d time.Duration) gsweb.Controll
 					panicChan <- p
 				}
 			}()
-			fun(c)
+			c.Next()
 			finish <- struct{}{}
 		}()
 
@@ -45,7 +45,6 @@ func TimeoutHandler(fun gsweb.ControllerHandler, d time.Duration) gsweb.Controll
 			c.GetResponse().Write([]byte("time out"))
 		}
 
-		c.Next()
 		return nil
 	}
 }

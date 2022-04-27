@@ -10,8 +10,8 @@ import (
 实现http标准库的handler接口
 */
 type GreensCore struct {
-	router      GRouter             // 所有路由
-	middlewares []ControllerHandler // 中间件
+	router      GRouter       // 所有路由
+	middlewares []HandlerFunc // 中间件
 }
 
 type GRouter map[string]*TrieTree // 方法 : 路由 : 实际处理函数
@@ -57,7 +57,7 @@ func (g *GreensCore) ServeHTTP(response http.ResponseWriter, request *http.Reque
 }
 
 // 注册中间件Use
-func (g *GreensCore) Use(middlewares ...ControllerHandler) {
+func (g *GreensCore) Use(middlewares ...HandlerFunc) {
 	g.middlewares = append(g.middlewares, middlewares...)
 }
 
@@ -74,28 +74,28 @@ func (g *GreensCore) FindRouteNode(req *http.Request) *node {
 	return nil
 }
 
-func (g *GreensCore) Get(url string, h ...ControllerHandler) {
+func (g *GreensCore) Get(url string, h ...HandlerFunc) {
 	handlers := append(g.middlewares, h...)
 	if err := g.router[GET].AddRouter(url, handlers); err != nil {
 		log.Fatal("add router error:", err)
 	}
 }
 
-func (g *GreensCore) Post(url string, h ...ControllerHandler) {
+func (g *GreensCore) Post(url string, h ...HandlerFunc) {
 	handlers := append(g.middlewares, h...)
 	if err := g.router[POST].AddRouter(url, handlers); err != nil {
 		log.Fatal("add router error:", err)
 	}
 }
 
-func (g *GreensCore) Put(url string, h ...ControllerHandler) {
+func (g *GreensCore) Put(url string, h ...HandlerFunc) {
 	handlers := append(g.middlewares, h...)
 	if err := g.router[PUT].AddRouter(url, handlers); err != nil {
 		log.Fatal("add router error:", err)
 	}
 }
 
-func (g *GreensCore) Delete(url string, h ...ControllerHandler) {
+func (g *GreensCore) Delete(url string, h ...HandlerFunc) {
 	handlers := append(g.middlewares, h...)
 	if err := g.router[DELETE].AddRouter(url, handlers); err != nil {
 		log.Fatal("add router error:", err)

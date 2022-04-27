@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-func TestH1() gsweb.ControllerHandler {
+func TestH1() gsweb.HandlerFunc {
 	return func(c *gsweb.Context) error {
 		fmt.Println("mid 1")
 		c.Next()
@@ -14,7 +14,7 @@ func TestH1() gsweb.ControllerHandler {
 	}
 }
 
-func TestH2() gsweb.ControllerHandler {
+func TestH2() gsweb.HandlerFunc {
 	return func(c *gsweb.Context) error {
 		fmt.Println("mid 2")
 		c.Next()
