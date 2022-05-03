@@ -1,6 +1,6 @@
 package middleware
 
-import "GreensOne/gsweb"
+import "greensone/gsweb"
 
 /**
 全局捕获panic中间件

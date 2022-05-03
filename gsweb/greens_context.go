@@ -1,13 +1,13 @@
 package gsweb
 
 import (
-	"GreensOne/cast"
 	"bytes"
 	"context"
 	"encoding/json"
 	"encoding/xml"
 	"errors"
 	"fmt"
+	"greensone/cast"
 	"html/template"
 	"io/ioutil"
 	"mime/multipart"

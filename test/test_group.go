@@ -1,7 +1,7 @@
 package test
 
 import (
-	"GreensOne/gsweb"
+	"greensone/gsweb"
 	"time"
 )
 

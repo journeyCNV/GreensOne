@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"GreensOne/gsweb"
+	"greensone/gsweb"
 	"log"
 	"time"
 )

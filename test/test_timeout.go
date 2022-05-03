@@ -1,8 +1,8 @@
 package test
 
 import (
-	"GreensOne/gsweb"
 	"fmt"
+	"greensone/gsweb"
 )
 
 func TestH1() gsweb.HandlerFunc {
