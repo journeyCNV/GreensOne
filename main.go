@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
-	"greensone/gsweb"
-	"greensone/gsweb/middleware"
-	"greensone/test"
+	"github.com/journeycnv/greensone/gsweb"
+	"github.com/journeycnv/greensone/gsweb/middleware"
+	"github.com/journeycnv/greensone/test"
 	"log"
 	"net/http"
 	"os"
@@ -15,8 +15,7 @@ import (
 
 func main() {
 	gs := gsweb.NewGreensCore()
-	gs.Use(middleware.Recovery())
-	gs.Use(middleware.Cost())
+	gs.Use(middleware.Recovery(), middleware.Cost())
 
 	test.Register(gs)
 	server := &http.Server{
