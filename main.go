@@ -1,10 +1,10 @@
 package main
 
 import (
-	"GreensOne/gsweb"
-	"GreensOne/gsweb/middleware"
-	"GreensOne/test"
 	"context"
+	"greensone/gsweb"
+	"greensone/gsweb/middleware"
+	"greensone/test"
 	"log"
 	"net/http"
 	"os"
