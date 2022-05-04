@@ -10,6 +10,7 @@ import (
 	"github.com/journeycnv/greensone/cast"
 	"html/template"
 	"io/ioutil"
+	"math"
 	"mime/multipart"
 	"net/http"
 	"net/url"
@@ -28,6 +29,8 @@ type Context struct {
 
 	hasTimeout bool        //超时标记
 	writerMux  *sync.Mutex //写保护
+
+	Errors errorMsgs
 }
 
 func NewContext(r *http.Request, w http.ResponseWriter) *Context {
@@ -39,6 +42,8 @@ func NewContext(r *http.Request, w http.ResponseWriter) *Context {
 		writerMux: &sync.Mutex{},
 	}
 }
+
+const abortIndex int8 = math.MaxInt8 / 2
 
 /**---------------------------------------------**/
 
@@ -504,6 +509,40 @@ func (ctx *Context) SetStatus(code int) GResponse {
 func (ctx *Context) SetOkStatus() GResponse {
 	ctx.response.WriteHeader(http.StatusOK)
 	return ctx
+}
+
+//----------------------------------------------------------------
+// Abort 可防止调用挂起的处理程序
+func (ctx *Context) Abort() {
+	ctx.index = int(abortIndex)
+}
+
+func (ctx *Context) IsAborted() bool {
+	return ctx.index >= int(abortIndex)
+}
+
+func (ctx *Context) AbortWithStatus(code int) {
+	ctx.SetStatus(code)
+	ctx.Abort()
+}
+
+//----------------------------------------------------------------
+
+func (ctx *Context) Error(err error) *Error {
+	if err == nil {
+		panic("err is nil")
+	}
+
+	parsedError, ok := err.(*Error)
+	if !ok {
+		parsedError = &Error{
+			Err:  err,
+			Type: ErrorTypePrivate,
+		}
+	}
+
+	ctx.Errors = append(ctx.Errors, parsedError)
+	return parsedError
 }
 
 //-------------------辅助函数---------------------------------------------

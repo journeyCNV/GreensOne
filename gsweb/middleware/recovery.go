@@ -11,6 +11,7 @@ func Recovery() gsweb.HandlerFunc {
 		defer func() {
 			if err := recover(); err != nil {
 				c.SetStatus(500).Json(err)
+				gsweb.LogError("panic happen", nil)
 			}
 		}()
 		c.Next()

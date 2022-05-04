@@ -38,7 +38,7 @@ func Logger() *logrus.Logger {
 	logger.Out = src
 	logger.SetLevel(logrus.DebugLevel)
 	logger.SetFormatter(&logrus.TextFormatter{
-		TimestampFormat: "2006-01-02 15:04:05",
+		TimestampFormat: "2006/01/02 - 15:04:05",
 	})
 	return logger
 }
