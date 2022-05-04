@@ -7,7 +7,7 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
-	"greensone/cast"
+	"github.com/journeycnv/greensone/cast"
 	"html/template"
 	"io/ioutil"
 	"mime/multipart"

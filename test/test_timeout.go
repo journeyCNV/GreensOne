@@ -2,7 +2,7 @@ package test
 
 import (
 	"fmt"
-	"greensone/gsweb"
+	"github.com/journeycnv/greensone/gsweb"
 )
 
 func TestH1() gsweb.HandlerFunc {

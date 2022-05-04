@@ -1,7 +1,8 @@
 package test
 
 import (
-	"greensone/gsweb"
+	"github.com/journeycnv/greensone/gsweb"
+	"github.com/journeycnv/greensone/gsweb/middleware"
 	"time"
 )
 
@@ -12,7 +13,7 @@ func Register(g *gsweb.GreensCore) {
 		group1 := group.Group("/door")
 		group1.Use(TestH1()) // 批量使用中间件
 		{
-			group1.Get("/open", TestH2(), TestHandler)
+			group1.Get("/open", middleware.TimeoutHandler(5), TestHandler)
 		}
 	}
 }
@@ -23,6 +24,9 @@ func WelcomeHandler(ctx *gsweb.Context) error {
 }
 
 func TestHandler(ctx *gsweb.Context) error {
+	gsweb.LogInfo("test 哇", &gsweb.LogField{
+		"msg": "open the door",
+	})
 	ctx.Json("open the door.").SetStatus(200)
 	return nil
 }

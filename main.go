@@ -15,7 +15,7 @@ import (
 
 func main() {
 	gs := gsweb.NewGreensCore()
-	gs.Use(middleware.Recovery(), middleware.Cost())
+	gs.Use(middleware.Recovery(), middleware.LoggerDefault())
 
 	test.Register(gs)
 	server := &http.Server{

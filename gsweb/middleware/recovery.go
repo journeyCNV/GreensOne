@@ -1,6 +1,6 @@
 package middleware
 
-import "greensone/gsweb"
+import "github.com/journeycnv/greensone/gsweb"
 
 /**
 全局捕获panic中间件

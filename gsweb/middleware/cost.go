@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"greensone/gsweb"
+	"github.com/journeycnv/greensone/gsweb"
 	"log"
 	"time"
 )
