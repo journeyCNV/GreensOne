@@ -1,6 +1,8 @@
 package middleware
 
-import "github.com/journeycnv/greensone/gsweb"
+import (
+	"github.com/journeycnv/greensone/gsweb"
+)
 
 /**
 全局捕获panic中间件
@@ -11,7 +13,7 @@ func Recovery() gsweb.HandlerFunc {
 		defer func() {
 			if err := recover(); err != nil {
 				c.SetStatus(500).Json(err)
-				gsweb.LogError("panic happen", nil)
+				gsweb.LogError("panic happen :"+err.(string), nil)
 			}
 		}()
 		c.Next()

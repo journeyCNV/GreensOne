@@ -16,7 +16,9 @@ import (
 func main() {
 	gs := gsweb.NewGreensCore()
 	gs.Use(middleware.Recovery(), middleware.LoggerDefault())
+	gs.Bind(&test.DServiceProvider{})
 
+	// 用户注册路由
 	test.Register(gs)
 	server := &http.Server{
 		Handler: gs,
@@ -28,6 +30,7 @@ func main() {
 		server.ListenAndServe()
 	}()
 
+	// 服务关闭测试------------------------------------------------------------
 	// 当前的等待信号量
 	quit := make(chan os.Signal)
 	// 监控以下信号

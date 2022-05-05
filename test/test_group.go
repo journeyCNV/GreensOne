@@ -15,11 +15,16 @@ func Register(g *gsweb.GreensCore) {
 		{
 			group1.Get("/open", middleware.TimeoutHandler(5), TestHandler)
 		}
+		group.Get("/happy", WelcomeHandler)
 	}
 }
 
 func WelcomeHandler(ctx *gsweb.Context) error {
-	ctx.Json("welcome!").SetStatus(200)
+	gsweb.LogInfo("start", nil)
+	service := ctx.MustMake(key).(DService)
+	gsweb.LogInfo("here!", nil)
+	fun := service.MustSmile()
+	ctx.SetOkStatus().Json(fun)
 	return nil
 }
 

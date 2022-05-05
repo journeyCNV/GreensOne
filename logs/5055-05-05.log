@@ -25,3 +25,29 @@ time="2022-05-05 02:55:44" level=info msg="|      517.4µs |    [::1]:60671 |GET
 time="2022-05-05 02:55:44" level=info msg="test 哇" fields.msg="open the door"
 time="2022/05/05 - 03:29:23" level=info msg="|     1.3079ms |    [::1]:61456 |GET |/show/door/open|"
 time="2022/05/05 - 03:29:23" level=info msg="test 哇" fields.msg="open the door"
+time="2022/05/05 - 12:00:11" level=error msg="panic happen"
+time="2022/05/05 - 12:07:33" level=error msg="panic happen: "
+time="2022/05/05 - 12:12:08" level=error msg="panic happen: "
+time="2022/05/05 - 12:12:42" level=info msg=start
+time="2022/05/05 - 12:12:42" level=error msg="panic happen: "
+time="2022/05/05 - 12:13:44" level=info msg=start
+time="2022/05/05 - 12:13:44" level=error msg="panic happen: "
+time="2022/05/05 - 12:17:55" level=info msg=start
+time="2022/05/05 - 12:19:28" level=error msg="panic happen: "
+time="2022/05/05 - 12:34:37" level=info msg=start
+time="2022/05/05 - 12:34:37" level=info msg="here!"
+time="2022/05/05 - 12:34:37" level=info msg="|        556µs |    [::1]:51884 |GET |/show/happy|"
+time="2022/05/05 - 12:39:24" level=info msg=start
+time="2022/05/05 - 12:39:24" level=error msg="panic happen :"
+time="2022/05/05 - 12:40:43" level=info msg=start
+time="2022/05/05 - 12:40:43" level=info msg=start
+time="2022/05/05 - 12:40:43" level=info msg=start
+time="2022/05/05 - 12:40:44" level=info msg=start
+time="2022/05/05 - 12:40:44" level=info msg=start
+time="2022/05/05 - 12:40:44" level=info msg=start
+time="2022/05/05 - 12:40:49" level=info msg=start
+time="2022/05/05 - 12:40:49" level=info msg=start
+time="2022/05/05 - 12:40:49" level=info msg=start
+time="2022/05/05 - 12:41:19" level=info msg=start
+time="2022/05/05 - 12:41:19" level=info msg=start
+time="2022/05/05 - 12:41:19" level=info msg=start

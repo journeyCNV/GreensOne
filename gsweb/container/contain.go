@@ -98,8 +98,10 @@ func (c *Container) Make(key string) (interface{}, error) {
 }
 
 func (c *Container) MustMake(key string) interface{} {
+	fmt.Println("mustMake")
 	serv, err := c.make(key, nil, false)
 	if err != nil {
+		fmt.Println(err.Error())
 		panic(err)
 	}
 	return serv

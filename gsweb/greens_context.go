@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/journeycnv/greensone/cast"
+	"github.com/journeycnv/greensone/gsweb/container"
 	"html/template"
 	"io/ioutil"
 	"math"
@@ -31,6 +32,7 @@ type Context struct {
 	writerMux  *sync.Mutex //写保护
 
 	Errors errorMsgs
+	con    container.GContainer
 }
 
 func NewContext(r *http.Request, w http.ResponseWriter) *Context {
@@ -543,6 +545,20 @@ func (ctx *Context) Error(err error) *Error {
 
 	ctx.Errors = append(ctx.Errors, parsedError)
 	return parsedError
+}
+
+//------------------容器-------------------------------------------------
+
+func (ctx *Context) Make(key string) (interface{}, error) {
+	return ctx.con.Make(key)
+}
+
+func (ctx *Context) MustMake(key string) interface{} {
+	return ctx.con.MustMake(key)
+}
+
+func (ctx *Context) MakeNew(key string, params []interface{}) (interface{}, error) {
+	return ctx.con.MakeNew(key, params)
 }
 
 //-------------------辅助函数---------------------------------------------

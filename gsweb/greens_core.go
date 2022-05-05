@@ -1,6 +1,7 @@
 package gsweb
 
 import (
+	"github.com/journeycnv/greensone/gsweb/container"
 	"log"
 	"net/http"
 	"strings"
@@ -12,6 +13,7 @@ import (
 type GreensCore struct {
 	router      GRouter       // 所有路由
 	middlewares []HandlerFunc // 中间件
+	con         container.GContainer
 }
 
 type GRouter map[string]*TrieTree // 方法 : 路由 : 实际处理函数
@@ -24,7 +26,10 @@ const (
 )
 
 func NewGreensCore() *GreensCore {
-	return &GreensCore{router: routerMap()}
+	return &GreensCore{
+		router: routerMap(),
+		con:    container.NewContainer(),
+	}
 }
 
 // 实现http标准库的handler的方法
@@ -36,6 +41,7 @@ type Handler interface {
 */
 func (g *GreensCore) ServeHTTP(response http.ResponseWriter, request *http.Request) {
 	ctx := NewContext(request, response)
+	ctx.con = g.con
 
 	// 寻找路由匹配的控制器们
 	node := g.FindRouteNode(request)
@@ -105,6 +111,18 @@ func (g *GreensCore) Delete(url string, h ...HandlerFunc) {
 func (g *GreensCore) Group(prefix string) GGroup {
 	return NewGroup(g, prefix)
 }
+
+//--------------------容器相关-------------------------------------
+
+func (g *GreensCore) Bind(p container.ServiceProvider) error {
+	return g.con.Bind(p)
+}
+
+func (g *GreensCore) IsBind(key string) bool {
+	return g.con.IsBind(key)
+}
+
+//-----------------------------------------------------------------
 
 func routerMap() GRouter {
 	router := GRouter{}
