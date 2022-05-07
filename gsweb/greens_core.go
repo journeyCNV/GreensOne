@@ -1,10 +1,15 @@
 package gsweb
 
 import (
+	"context"
 	"github.com/journeycnv/greensone/gsweb/container"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
 	"strings"
+	"syscall"
+	"time"
 )
 
 /**
@@ -120,6 +125,38 @@ func (g *GreensCore) Bind(p container.ServiceProvider) error {
 
 func (g *GreensCore) IsBind(key string) bool {
 	return g.con.IsBind(key)
+}
+
+//-----------------------------------------------------------------
+
+func (g *GreensCore) Run() {
+	server := &http.Server{
+		Handler: g,
+		Addr:    ":8080",
+	}
+
+	// 启动服务的goroutine
+	go func() {
+		err := server.ListenAndServe()
+		if err != nil {
+			log.Fatal("server start failed ", err)
+		}
+	}()
+
+	quit := make(chan os.Signal)
+	// 监控以下信号
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+	// 阻塞当前等待信号
+	<-quit
+
+	// 控制优雅关闭最多等待10s
+	timeoutCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// 当监听到关闭进程的信号之后，就会执行下面的优雅关闭 graceful shuts down
+	if err := server.Shutdown(timeoutCtx); err != nil {
+		log.Fatal("server shutdown ", err)
+	}
 }
 
 //-----------------------------------------------------------------

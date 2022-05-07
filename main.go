@@ -1,16 +1,9 @@
 package main
 
 import (
-	"context"
 	"github.com/journeycnv/greensone/gsweb"
 	"github.com/journeycnv/greensone/gsweb/middleware"
 	"github.com/journeycnv/greensone/test"
-	"log"
-	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
 )
 
 func main() {
@@ -20,6 +13,9 @@ func main() {
 
 	// 用户注册路由
 	test.Register(gs)
+	gs.Run()
+
+	/**
 	server := &http.Server{
 		Handler: gs,
 		Addr:    ":8080",
@@ -46,4 +42,6 @@ func main() {
 	if err := server.Shutdown(timeoutCtx); err != nil {
 		log.Fatal("server shutdown ", err)
 	}
+
+	*/
 }
