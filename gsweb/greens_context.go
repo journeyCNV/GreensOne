@@ -10,11 +10,13 @@ import (
 	"github.com/journeycnv/greensone/cast"
 	"github.com/journeycnv/greensone/gsweb/container"
 	"html/template"
+	"io"
 	"io/ioutil"
 	"math"
 	"mime/multipart"
 	"net/http"
 	"net/url"
+	"os"
 	"sync"
 	"time"
 )
@@ -235,6 +237,23 @@ func (ctx *Context) Form(key string) interface{} {
 		}
 	}
 	return nil
+}
+
+func (ctx *Context) SaveUploadedFile(file *multipart.FileHeader, dst string) error {
+	src, err := file.Open()
+	if err != nil {
+		return err
+	}
+	defer src.Close()
+
+	out, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, src)
+	return err
 }
 
 // --------------------------------------------------------end
