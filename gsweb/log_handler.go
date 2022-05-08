@@ -46,37 +46,41 @@ func Logger() *logrus.Logger {
 type LogField logrus.Fields
 
 func LogInfo(msg string, fields *LogField) {
-	logrus.Info(msg)
 	if fields != nil {
-		Logger().WithFields(logrus.Fields(*fields)).Info(msg)
+		logrus.Info(msg, fields)                              // output in terminal
+		Logger().WithFields(logrus.Fields(*fields)).Info(msg) // output in file
 		return
 	}
+	logrus.Info(msg)
 	Logger().Info(msg)
 }
 
 func LogError(msg string, fields *LogField) {
-	logrus.Error(msg)
 	if fields != nil {
+		logrus.Error(msg, fields)
 		Logger().WithFields(logrus.Fields(*fields)).Error(msg)
 		return
 	}
+	logrus.Error(msg)
 	Logger().Error(msg)
 }
 
 func LogWarn(msg string, fields *LogField) {
-	logrus.Warn(msg)
 	if fields != nil {
+		logrus.Warn(msg, fields)
 		Logger().WithFields(logrus.Fields(*fields)).Warn(msg)
 		return
 	}
+	logrus.Warn(msg)
 	Logger().Warn(msg)
 }
 
 func LogDebug(msg string, fields *LogField) {
-	logrus.Debug(msg)
 	if fields != nil {
+		logrus.Debug(msg, fields)
 		Logger().WithFields(logrus.Fields(*fields)).Debug(msg)
 		return
 	}
+	logrus.Debug(msg)
 	Logger().Debug(msg)
 }

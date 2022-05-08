@@ -20,7 +20,9 @@ func Register(g *gsweb.GreensCore) {
 }
 
 func WelcomeHandler(ctx *gsweb.Context) error {
-	gsweb.LogInfo("start", nil)
+	gsweb.LogInfo("start", &gsweb.LogField{
+		"title": "happy",
+	})
 	service := ctx.MustMake(key).(DService)
 	gsweb.LogInfo("here!", nil)
 	fun := service.MustSmile()
