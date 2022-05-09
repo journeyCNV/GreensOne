@@ -4,6 +4,7 @@ import (
 	"github.com/journeycnv/greensone/gsweb"
 	"github.com/journeycnv/greensone/gsweb/middleware"
 	"github.com/journeycnv/greensone/test"
+	"os"
 )
 
 func main() {
@@ -13,6 +14,18 @@ func main() {
 
 	// 用户注册路由
 	test.Register(gs)
+
+	gs.Post("/upload_file", func(c *gsweb.Context) error {
+		f, _ := c.FormFile("pic")
+		dir, _ := os.Getwd()
+		if f != nil {
+			c.SaveUploadedFile(f, dir+"/pic")
+			gsweb.LogInfo("upload ok", nil)
+		}
+		c.SetOkStatus()
+		return nil
+	})
+
 	gs.Run()
 
 	/**

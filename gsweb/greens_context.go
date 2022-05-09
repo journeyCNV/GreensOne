@@ -174,6 +174,7 @@ func (ctx *Context) Param(key string) interface{} {
 // form--------------------------------------------------start
 func (ctx *Context) FormAll() map[string][]string {
 	if ctx.request != nil {
+		ctx.request.ParseForm()
 		return map[string][]string(ctx.request.PostForm)
 	}
 	return map[string][]string{}

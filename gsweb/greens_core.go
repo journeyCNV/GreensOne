@@ -137,9 +137,10 @@ func (g *GreensCore) Run() {
 
 	// 启动服务的goroutine
 	go func() {
+		log.Println("Greens server start")
 		err := server.ListenAndServe()
 		if err != nil {
-			log.Fatal("server start failed ", err)
+			log.Fatal("server failed ", err)
 		}
 	}()
 
